@@ -1,16 +1,34 @@
-root: true
 depends:
   - lib_a
-checkoutScript: |
-  touch app_b.source
+  - lib_b
+
+checkoutSCM:
+    scm: import
+    url: ../src/app/
+    recipeRelative: True
+
 buildScript: |
-  cat >compile_commands.json <<-END
-  [
-  {
-    "app_b": "entry 1"
-  },
-  {
-    "app_b": "entry 2"
-  }
-  ]
-  END
+  # $1 = checkout, $2..$n = dependencies
+  SRCDIR="$1"
+
+  # Shift argument to remove $1 from the list
+  shift
+
+  # Concatenate all dependencies
+  DEPS=""
+  for dep in "$@"; do
+    DEPS="${DEPS:+$DEPS;}${dep}"
+  done
+
+  echo "DEPS:" $DEPS
+
+  cmake -S "$SRCDIR" -B . \
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+    -DCMAKE_PREFIX_PATH="$DEPS"
+
+  cmake --build . --parallel
+
+packageScript: |
+    cmake --install $1 --prefix .
+
+root: True

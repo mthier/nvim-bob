@@ -1,8 +1,0 @@
-root: true
-depends:
-  - lib_empty
-
-checkoutScript: |
-  touch app_c.source
-buildScript: |
-  touch app_c.bin
