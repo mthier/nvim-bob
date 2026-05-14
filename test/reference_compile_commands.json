@@ -1,0 +1,20 @@
+[
+  {
+    "command": "/usr/bin/c++  -isystem REPO_ROOT/test/dev/dist/lib_a/1/workspace/include -isystem REPO_ROOT/test/dev/dist/lib_b/1/workspace/include  -o CMakeFiles/app.dir/main.cpp.o -c REPO_ROOT/test/dev/src/app_a/1/workspace/main.cpp",
+    "directory": "REPO_ROOT/test/dev/build/app_a/1/workspace",
+    "file": "REPO_ROOT/test/dev/src/app_a/1/workspace/main.cpp",
+    "output": "CMakeFiles/app.dir/main.cpp.o"
+  },
+  {
+    "command": "/usr/bin/c++  -IREPO_ROOT/test/dev/src/lib_a/1/workspace/include  -o CMakeFiles/lib_a.dir/src/lib_a.cpp.o -c REPO_ROOT/test/dev/src/lib_a/1/workspace/src/lib_a.cpp",
+    "directory": "REPO_ROOT/test/dev/build/lib_a/1/workspace",
+    "file": "REPO_ROOT/test/dev/src/lib_a/1/workspace/src/lib_a.cpp",
+    "output": "CMakeFiles/lib_a.dir/src/lib_a.cpp.o"
+  },
+  {
+    "command": "/usr/bin/c++  -IREPO_ROOT/test/dev/src/lib_b/1/workspace/include -isystem REPO_ROOT/test/dev/dist/lib_a/1/workspace/include  -o CMakeFiles/lib_b.dir/src/lib_b.cpp.o -c REPO_ROOT/test/dev/src/lib_b/1/workspace/src/lib_b.cpp",
+    "directory": "REPO_ROOT/test/dev/build/lib_b/1/workspace",
+    "file": "REPO_ROOT/test/dev/src/lib_b/1/workspace/src/lib_b.cpp",
+    "output": "CMakeFiles/lib_b.dir/src/lib_b.cpp.o"
+  }
+]

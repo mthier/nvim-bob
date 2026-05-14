@@ -73,7 +73,7 @@ function M.init(prefix, path)
 
     -- Use cwd when no path is given.
     local base = (path == "" or path == nil) and vim.fn.getcwd()
-        or vim.fn.fnamemodify(path, ":p")
+        or vim.fn.fnamemodify(path, ":p"):gsub("/$", "")
 
     -- Not using `--directory` but `cwd` instead, because when running inside of
     -- a container via `g:bob_prefix` we would pass the path on the host to Bob
@@ -591,7 +591,11 @@ function M.project_impl(package, args)
 
     if ls_result.code ~= 0 then
         vim.notify(
-            string.format("bob ls failed: %s", vim.trim(ls_result.stdout or "")),
+            string.format(
+                "bob ls failed: %s%s",
+                vim.trim(ls_result.stdout or ""),
+                vim.trim(ls_result.stderr or "")
+            ),
             vim.log.levels.ERROR
         )
         return
@@ -777,7 +781,7 @@ function M.compilation_database()
     if vim.g.bob_prefix ~= nil and vim.g.bob_prefix ~= "" then
         local pwd_result = vim.system(
             { "bash", "-c", vim.g.bob_prefix .. " pwd" },
-            { text = true }
+            { cwd = state.bob_base_path, text = true }
         ):wait()
 
         if pwd_result.code ~= 0 then

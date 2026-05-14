@@ -1,0 +1,75 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  test-native:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Neovim
+        run: |
+          wget -q https://github.com/neovim/neovim/releases/download/stable/nvim-linux-x86_64.tar.gz
+          tar -xzf nvim-linux-x86_64.tar.gz
+          echo "$PWD/nvim-linux-x86_64/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++ ninja-build python3-pip
+          pip3 install --break-system-packages BobBuildTool==1.1.0
+
+      - name: BobInit + BobProject (native)
+        run: nvim --headless -l test/test_native.lua
+
+
+      - name: Compare compile_commands.json
+        run: |
+          python3 test/normalize_ccdb.py test/dev/compile_commands.json "$GITHUB_WORKSPACE" \
+            > /tmp/actual_compile_commands.json
+          diff test/reference_compile_commands.json /tmp/actual_compile_commands.json
+
+      - name: Upload artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-native-dev
+          path: test/dev/
+          retention-days: 1
+
+  test-docker-prefix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Neovim
+        run: |
+          wget -q https://github.com/neovim/neovim/releases/download/stable/nvim-linux-x86_64.tar.gz
+          tar -xzf nvim-linux-x86_64.tar.gz
+          echo "$PWD/nvim-linux-x86_64/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          pip3 install --break-system-packages BobBuildTool==1.1.0
+
+      - name: Build Docker image
+        run: docker build -t nvim-bob-test test/
+
+      - name: BobInit + BobProject (docker prefix)
+        run: nvim --headless -l test/test_docker.lua
+
+      - name: Compare compile_commands.json
+        run: |
+          python3 test/normalize_ccdb.py test/dev/compile_commands.json "$GITHUB_WORKSPACE" \
+            > /tmp/actual_compile_commands.json
+          diff test/reference_compile_commands.json /tmp/actual_compile_commands.json
+
+      - name: Upload artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-docker-dev
+          path: test/dev/
+          retention-days: 1

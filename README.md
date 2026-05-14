@@ -1,4 +1,6 @@
-# nvim-bob
+# nvim-bob 
+
+[![CI](https://github.com/mthier/nvim-bob/actions/workflows/ci.yml/badge.svg)](https://github.com/mthier/nvim-bob/actions/workflows/ci.yml)
 
 Neovim plugin for working in a [Bob Build Tool](https://github.com/BobBuildTool/bob) environment.
 Lua reimplementation of [vim-bob](https://github.com/ThomasFeher/vim-bob).

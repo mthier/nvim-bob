@@ -1,0 +1,4 @@
+test/.bob-*
+test/dev/
+test/graph/
+test/dist_folder/
