@@ -1,10 +1,9 @@
 depends:
   - lib_a
-  - lib_b
 
 checkoutSCM:
     scm: import
-    url: ../src/app/
+    url: ../src/lib_b/
     recipeRelative: True
 
 buildScript: |
@@ -30,5 +29,3 @@ buildScript: |
 
 packageScript: |
     cmake --install $1 --prefix .
-
-root: True

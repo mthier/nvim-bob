@@ -1,13 +1,13 @@
-checkoutScript: |
-  touch lib_a.source
+checkoutSCM:
+    scm: import
+    url: ../src/lib_a/
+    recipeRelative: True
+
 buildScript: |
-  cat >compile_commands.json <<-END
-  [
-  {
-    "lib_a": "entry 1"
-  },
-  {
-    "lib_a": "entry 2"
-  }
-  ]
-  END
+    cmake -S "$1" -B . \
+      -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+    cmake --build . --parallel
+
+packageScript: |
+    cmake --install $1 --prefix .
