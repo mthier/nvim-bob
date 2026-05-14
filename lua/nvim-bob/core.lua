@@ -736,7 +736,7 @@ function M.compilation_database()
     -- Merge all per-package compile_commands.json files into one aggregate
     -- database at dev/compile_commands.json.
     local compile_db = state.bob_base_path .. "/dev/compile_commands.json"
-    local merged = { "[" }
+    local merged = {}
 
     local build_dirs = vim.fn.uniq(
         vim.fn.sort(vim.tbl_values(state.project_package_build_dirs))
@@ -758,17 +758,17 @@ function M.compilation_database()
                 vim.notify("found")
             end
 
-            local entries = vim.fn.readfile(file)
-            -- Skip the opening '[' (index 1) and closing ']' (last) of each file.
-            for i = 2, #entries - 1 do
-                table.insert(merged, entries[i])
+            -- Parse the JSON array and append its entries to the merged list.
+            local ok, entries = pcall(
+                vim.json.decode,
+                table.concat(vim.fn.readfile(file), "\n")
+            )
+            if ok and type(entries) == "table" then
+                vim.list_extend(merged, entries)
+            else
+                vim.notify("failed to parse " .. file, vim.log.levels.WARN)
             end
-            table.insert(merged, ",")
         end
-    end
-
-    if #merged > 0 then
-        merged[#merged] = "]"
     end
 
     -- If building inside a container, translate container-side paths to their
@@ -792,26 +792,23 @@ function M.compilation_database()
         end
 
         local prefix_path = vim.trim(pwd_result.stdout or "")
+        -- Escape Lua pattern special chars in prefix_path so gsub treats it as a literal string.
+        local from_pattern = prefix_path:gsub("([%(%)%.%%%+%-%*%?%[%^%$])", "%%%1") .. "/"
+        local to = state.bob_base_path .. "/"
 
-        -- Match paths that are preceded by a quote, equals sign, space, or
-        -- compiler flag character to avoid replacing unrelated substrings.
-        local path_preceding_chars = [[\(["'=]\| -i\| -I\|\(\\\)\@<! \)\zs]]
-
-        local pattern = path_preceding_chars .. vim.pesc(prefix_path) .. "/"
-        local substitute = state.bob_base_path .. "/"
-
-        local text_subst = {}
-        for _, line in ipairs(merged) do
-            table.insert(
-                text_subst,
-                vim.fn.substitute(line, pattern, substitute, "g")
-            )
+        -- Rewrite paths in all string values of each entry. No preceding-char
+        -- guard is needed here because we operate on decoded JSON values, not
+        -- raw text where JSON syntax characters could cause false positives.
+        for _, entry in ipairs(merged) do
+            for k, v in pairs(entry) do
+                if type(v) == "string" then
+                    entry[k] = v:gsub(from_pattern, to)
+                end
+            end
         end
-
-        merged = text_subst
     end
 
-    vim.fn.writefile(merged, compile_db)
+    vim.fn.writefile({ vim.json.encode(merged) }, compile_db)
 end
 
 -- Build a package with `bob dev` without entering project mode (TODO: not yet implemented).
